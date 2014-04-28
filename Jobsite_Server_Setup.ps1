@@ -40,7 +40,7 @@ Import-module DHCPServer
     Add-DhcpServerv4Scope -name JS-$jobnumber -StartRange 10.$subnet.128 -EndRange 10.$subnet.254 -SubnetMask 255.255.255.0 -State Active
     Set-DhcpServerv4OptionValue -OptionId 3 -Value 10.$subnet.1 -ScopeId 10.$subnet.0
     Set-DhcpServerv4OptionValue -OptionId 6 -Value 10.1.1.10, 10.1.1.18 -ScopeId 10.$subnet.0
-    Set-DhcpServerv4OptionValue -OptionId 15 -Value clarkcc.com -ScopeId 10.$subnet.0
+    Set-DhcpServerv4OptionValue -OptionId 15 -Value yourdomain.com -ScopeId 10.$subnet.0
 
 ## DFS Setup
 # WinMF under 4.0 needs to use DFSUtil and DFSRAdmin
