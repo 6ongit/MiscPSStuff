@@ -14,11 +14,11 @@
 
 ##  Update the below variables as necessary.  
 # 4 digit number
-$jobnumber = '2667'
+$jobnumber = Read-host 'What is the job jumber?'
 # Now add a decimal to determine the subnets (at least until I find out how to do it automatically)
-$subnet = '26.67'
+$subnet = $jobnumber -replace '(?<=\d)(?=(\d{2})+\b)', '.'
 # What is the job name
-$jobname = 'FSU Program Mgmt'
+$jobname = Read-host 'What is the job name?'
 
 ## Uncomment this if you want to be able to run unsigned powershell scripts on this server
 #set-executionpolicy unrestricted
@@ -46,15 +46,6 @@ Import-module DHCPServer
 # WinMF under 4.0 needs to use DFSUtil and DFSRAdmin
 # DFS cmdLet coming soon
 
-mkdir C:\Projects\$jobnumber' '-' '$jobname
-cp \\clarkcc.com\storage\projects\$jobnumber '-' $jobname\* c:\projects\$jobnumber '-' $jobname\
-dfsutil target add \\clarkcc.com\storage\Projects\$jobnumber - $jobname
-DFSRAdmin member new /rgname:$jobnumber /memname:$env:computername
-DFSRAdmin conn new /rgname:$jobnumber /SendMem:$env:computername /RecvMem:svr-cc-fs /ConnEnabled:true
-DFSRAdmin conn new /rgname:$jobnumber /SendMem:$env:computername /RecvMem:svr-lw-fs /ConnEnabled:true
-DFSRAdmin conn new /rgname:$jobnumber /SendMem:svr-cc-fs /RecvMem:$env:computername /ConnEnabled:true
-DFSRAdmin conn new /rgname:$jobnumber /SendMem:svr-lw-fs /RecvMem:$env:computername /ConnEnabled:true
-DFSRAdmin membership set /rgname:$jobnumber /rfname:$jobnumber - $jobname /memname:clarkcc\$env.computername /localpath:C:\Projects\$jobnumber - $jobname /MembershipEnabled:true /StagingSize: 4000000 /CDSize:660 /IsPrimary:false /force 
 
 ## Set Hostname
 
