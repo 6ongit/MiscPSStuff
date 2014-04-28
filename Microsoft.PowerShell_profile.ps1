@@ -56,3 +56,54 @@ function isitup
 $jobnet = $jobnumber -replace '(?<=\d)(?=(\d{2})+\b)', '.'
 ping 10.$jobnet.1
 ping 10.$jobnet.20}
+
+## Log history on close
+function Export-History {
+ param ([string]$path=$historyPath)
+ $cmdArray = @()
+ if (Test-Path $path) {
+  $savedHistory = @(Import-Clixml $historyPath)            
+
+        $savedHistory | % { $cmdArray += $_.CommandLine }            
+
+  Get-History -Count $MaximumHistoryCount | % {
+                #first level of filtering
+                if ($cmdArray -notcontains $_.CommandLine) { $savedHistory += $_ }             
+
+                #Second level of filtering to remove duplicates from current session also
+                $cmdArray = @()
+                $savedHistory | % { $cmdArray += $_.CommandLine }
+                }            
+
+  $savedHistory | Export-Clixml $path
+  Write-Host -ForegroundColor Green "`nExported history to $path along with old import`n"
+ } else {
+  Get-History -Count $MaximumHistoryCount | Export-Clixml $path
+  Write-Host -ForegroundColor Green "`nExported history to $path`n"
+ }
+}            
+
+function Import-History {
+ param ([parameter(mandatory=$true)][string]$path=$historyPath)
+ if (Test-Path $(Split-Path $path)) {
+  Import-Clixml $path | ? {$count++;$true} | Add-History
+  Write-Host -Fore Green "`nLoaded $count history item(s) from $path`n"
+ }
+}            
+
+#reset $MaximumHistoryCount to 150
+$MaximumHistoryCount = 150            
+
+#Generate Histry export path for this session
+$date = Get-Date
+#This is not so good. But OK for now
+$historyPath = "$((split-path $profile))\History$($date.Month)$($date.Day)$($date.Year).clixml"            
+
+# This is from Nivot Ink's (@oising) blog post http://www.nivot.org/2009/08/15/PowerShell20PersistingCommandHistory.aspx
+Register-EngineEvent -SourceIdentifier powershell.exiting -SupportEvent -Action { Export-History }            
+
+# load the most recent history, if it exists
+if ((Test-Path $(Split-Path $profile))) {
+ (Test-Path $historyPath)
+   Import-History $historyPath
+  }
