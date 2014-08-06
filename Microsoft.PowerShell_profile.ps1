@@ -23,6 +23,9 @@ set-alias psping C:\PSTools\psping.exe
 set-alias psservice C:\PSTools\PsService.exe
 set-alias psshutdown C:\PSTools\psshutdown.exe
 set-alias pssuspend C:\PSTools\pssuspend.exe
+set-alias plink C:\Temp\plink.exe
+set-alias adb C:\adb\sdk\platform-tools\adb.exe
+set-alias fastboot C:\adb\sdk\platform-tools\fastboot.exe
 
 ## I missed using the one-worder of "uptime." 
 Function Uptime
@@ -30,7 +33,7 @@ Function Uptime
 
 $lastboottime = (Get-WmiObject -Class Win32_OperatingSystem -computername $computer).LastBootUpTime
 
-$sysuptime = (Get-Date) – [System.Management.ManagementDateTimeconverter]::ToDateTime($lastboottime)
+$sysuptime = (Get-Date) â€“ [System.Management.ManagementDateTimeconverter]::ToDateTime($lastboottime)
  
 Write-Host "$computer has been up for: " $sysuptime.days "days" $sysuptime.hours "hours" $sysuptime.minutes "minutes" $sysuptime.seconds "seconds"}
 
@@ -107,3 +110,39 @@ if ((Test-Path $(Split-Path $profile))) {
  (Test-Path $historyPath)
    Import-History $historyPath
   }
+
+# Get Serial
+function getserial
+{$computer = Read-Host "Which computer?"
+$Serial = (Get-WMIObject -Class "Win32_BIOS" -computer $computer | select SerialNumber)
+Write-Host "$computer has the sevice tag of $Serial"}
+
+#Rename PC to Serial
+function fix-pcname
+{$computer = Read-Host "Which computer?"
+ $Serial = (Get-WMIObject -Class "Win32_BIOS" -computer $computer | select SerialNumber)
+ $strippedserial = ($Serial -replace "@{SerialNumber=", "" -replace "}","")
+ rename-computer -ComputerName $computer -NewName $strippedSerial -domaincredential $env:USERNAME -force
+ write-host $computer "has been renamed" $strippedserial"."}
+
+ function Get-IPAddress
+{  param
+  (
+    [Parameter(ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true)]
+    [String[]]
+    $Name
+  )
+  
+  process
+  { $Name | ForEach-Object { try { [System.Net.DNS]::GetHostByName($_) } catch { } }}}
+
+function pingsweep {
+# Read in the input file and then loop through each entry
+Get-Content .\pingMe.txt | ForEach {
+
+    # Use the Test-Connection cmdlet to determine if the machine is responding
+    $pinged = Test-Connection -ComputerName $_ -Count 1 -Quiet
+    # Use an If statement to determine if the machine responded or not and output accordingly
+    If ($pinged) { Write-Host "$_ - OK" }
+    Else { Write-Host "$_ - No Reply" }
+}}
